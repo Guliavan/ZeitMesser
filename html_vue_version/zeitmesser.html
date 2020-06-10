@@ -1,0 +1,212 @@
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        .base-timer {
+            position: relative;
+            height: 300px;
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        /* Removes SVG styling that would hide the time label */
+        .base-timer__circle {
+            fill: none;
+            stroke: none;
+        }
+
+        /* The SVG path that displays the timer's progress */
+        .base-timer__path-elapsed {
+            stroke-width: 7px;
+            stroke: grey;
+        }
+
+        .base-timer__label {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .base-timer__label-start {
+            padding:20px;
+        }
+
+        .base-timer__label-button {
+            font-size: 20px;
+            padding:5px 10px;
+        }
+
+        .base-timer__path-remaining {
+            /* Just as thick as the original ring */
+            stroke-width: 7px;
+
+            /* Rounds the line endings to create a seamless circle */
+            stroke-linecap: round;
+
+            /* Makes sure the animation starts at the top of the circle */
+            transform: rotate(90deg);
+            transform-origin: center;
+
+            /* One second aligns with the speed of the countdown timer */
+            transition: 1s linear all;
+
+            /* Allows the ring to change color when the color value updates */
+            stroke: currentColor;
+        }
+
+        .base-timer__path-remaining.green {
+            color: #41b883;
+        }
+
+        .base-timer__path-remaining.orange {
+            color: #ffa500;
+        }
+
+        .base-timer__path-remaining.red {
+            color: #ff0000;
+        }
+
+        .base-timer__svg {
+            /* Flips the svg and makes the animation to move left-to-right */
+            transform: scaleX(-1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="timerApp">
+        <div id="timerApp" class="base-timer">
+            <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <g class="base-timer__circle">
+                    <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45" />
+                    <path id="base-timer-path-remaining" stroke-dasharray="283 283"
+                        class="base-timer__path-remaining green" d="
+                        M 50, 50
+                        m -45, 0
+                        a 45,45 0 1,0 90,0
+                        a 45,45 0 1,0 -90,0
+                        "></path>
+                </g>
+            </svg>
+            <span id="base-timer-label" class="base-timer__label">
+                <a v-on:click="startTimer" class="base-timer__label-start">
+                    {{ formatTimeLeft(timeLeft) }}
+                </a>
+                <button v-on:click="setTime" class="base-timer__label-button">
+                    Set Time
+                </button>
+            </span>
+        </div>
+    </div>
+    <script>
+        const DEFAULT_TIME = 60;
+        const FULL_DASH_ARRAY = 283; //(2 * pi * 45 (r))
+        const WARNING_THRESHOLD = 10;
+        const ALERT_THRESHOLD = 5;
+        const COLOR_CODES = {
+            info: {
+                color: "green"
+            },
+            warning: {
+                color: "orange",
+                threshold: WARNING_THRESHOLD
+            },
+            alert: {
+                color: "red",
+                threshold: ALERT_THRESHOLD
+            }
+        };
+        const { alert, warning, info } = COLOR_CODES;
+
+        let app = new Vue({
+            el: '#timerApp',
+            data: {
+                startTime: DEFAULT_TIME,
+                timeLeft: DEFAULT_TIME,
+                intervalTimer: null,
+                remainingPathColor: COLOR_CODES.info.color
+            },
+            methods: {
+                resetTimer: function () {
+                    this.timeLeft = this.startTime;
+                    if (this.intervalTimer != null) {
+                        this.removePathColor(alert.color);
+                        this.setPathColor(info.color);
+                        clearInterval(this.intervalTimer);
+                    }
+                },
+                startTimer: function () {
+                    this.resetTimer();
+                    this.intervalTimer = setInterval(
+                        () => {
+                            if (this.timeLeft <= 0) {
+                                this.resetTimer();
+                            } else {
+                                this.timeLeft = this.timeLeft - 1;
+                                this.setCircleDasharray();
+                                this.setRemainingPathColor();
+                            }
+                        },
+                        1000
+                    );
+                },
+                setTime() {
+                    let timeInput = window.prompt("Set time", this.startTime);
+                    if (timeInput != null && timeInput != "") {
+                        this.startTime = timeInput;
+                        this.resetTimer();
+                    }
+                },
+                formatTimeLeft(time) {
+                    const minutes = Math.floor(time / 60);
+                    let seconds = time % 60;
+                    // If the value of seconds is less than 10, then display seconds with a leading zero
+                    if (seconds < 10) {
+                        seconds = `0${seconds}`;
+                    }
+                    return `${minutes}:${seconds}`;
+                },
+                calculateTimeFraction() {
+                    const rawTimeFraction = this.timeLeft / this.startTime;
+                    return rawTimeFraction - (1 / this.startTime) * (1 - rawTimeFraction);
+                },
+                setCircleDasharray() {
+                    const circleDasharray = `${(
+                        this.calculateTimeFraction() * FULL_DASH_ARRAY
+                    ).toFixed(0)} 283`;
+                    document
+                        .getElementById("base-timer-path-remaining")
+                        .setAttribute("stroke-dasharray", circleDasharray);
+                },
+                removePathColor(color) {
+                    document
+                        .getElementById("base-timer-path-remaining")
+                        .classList.remove(color);
+                },
+                setPathColor(color) {
+                    document
+                        .getElementById("base-timer-path-remaining")
+                        .classList.add(color);
+                },
+                setRemainingPathColor() {
+                    if (this.timeLeft <= alert.threshold) {
+                        this.removePathColor(warning.color);
+                        this.setPathColor(alert.color);
+                    } else if (this.timeLeft <= warning.threshold) {
+                        this.removePathColor(info.color);
+                        this.setPathColor(warning.color);
+                    }
+                },
+            }
+        });
+    </script>
+</body>
+
+</html>
