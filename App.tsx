@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { Svg, G, Circle, Path } from 'react-native-svg';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, TouchableOpacity } from 'react-native';
 
 const DEFAULT_TIME = 90;
 const FULL_DASH_ARRAY = 283; //(2 * pi * 45 (r))
@@ -28,6 +28,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    timerCountContainer: {
+        position: 'relative',
+        top: -140
+    },
+    timerCountText: {
+        fontSize: 30,
+    },
+    timerCountImage: {
+        position: 'absolute',
+        left: 125,
+        top: 0,
+        width: 36,
+        height: 36,
+        opacity: 0.5
     },
     timerContainer: {
         alignItems: 'center',
@@ -75,12 +90,25 @@ const styles = StyleSheet.create({
     }
 });
 
-export default class App extends Component {
-    constructor(props:Object) {
+interface IProps {
+}
+
+interface IState {
+    startTime: number;
+    timeLeft: number;
+    timeStartedCount: number;
+    intervalTimer: any;
+    pathColor: string;
+    strokeDasharray: string;
+}
+
+export default class App extends Component<IProps, IState> {
+    constructor(props:IProps) {
         super(props);
         this.state = {
             startTime: DEFAULT_TIME,
             timeLeft: DEFAULT_TIME,
+            timeStartedCount: 0,
             intervalTimer: 0,
             pathColor: COLOR_CODES.info.color,
             strokeDasharray: '283 283'
@@ -93,6 +121,7 @@ export default class App extends Component {
         this.setPathColor = this.setPathColor.bind(this);
         this.setRemainingPathColor = this.setRemainingPathColor.bind(this);
         this.onChangeStartTime = this.onChangeStartTime.bind(this);
+        this.resetTimerCount = this.resetTimerCount.bind(this);
     }
 
     resetTimer () {
@@ -116,7 +145,10 @@ export default class App extends Component {
     startTimer() {
         this.resetTimer();
         const newTimer = setInterval( this.iterateInterval, 1000 );
-        this.setState({ intervalTimer: newTimer });
+        this.setState({
+            intervalTimer: newTimer,
+            timeStartedCount: this.state.timeStartedCount +1
+        });
     };
 
     formatTimeLeft(time: number) {
@@ -134,7 +166,7 @@ export default class App extends Component {
     };
 
     calculateTimeFraction() {
-        const rawTimeFraction:Number = this.state.timeLeft / this.state.startTime;
+        const rawTimeFraction:number = this.state.timeLeft / this.state.startTime;
         return rawTimeFraction - (1 / this.state.startTime) * (1 - rawTimeFraction);
     };
 
@@ -171,6 +203,10 @@ export default class App extends Component {
         this.setState({ startTime: numericalValue, timeLeft: numericalValue });
     };
 
+    resetTimerCount() {
+        this.setState({ timeStartedCount: 0});
+    };
+
     componentWillUnmount() {
         if (this.state.intervalTimer != 0) {
             clearInterval(this.state.intervalTimer);
@@ -180,15 +216,26 @@ export default class App extends Component {
     render() {
         return (
             <View style={styles.container}>
-                <View style={styles.timerContainer}>
-                    {/* <Text>Open up App.tsx to start working on your app!</Text> */}
+                <TouchableOpacity style={styles.timerCountContainer} onPress={this.resetTimerCount}>
+                    <Text style={styles.timerCountText} >
+                        Count: {this.state.timeStartedCount}
+                    </Text>
+                    { this.state.timeStartedCount > 0 ?
+                        (
+                            <Image
+                                style={styles.timerCountImage}
+                                source={require('./assets/reset-96.png')}
+                            />
+                        ): null }
+
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.timerContainer} onPress={this.startTimer}>
                     <View style={styles.baseTimer}>
                         <Svg
                             testID="baseTimerPathSVG"
                             style={styles.baseTimerSvg}
                             height="100px"
-                            width="100px"
-                            onPress={this.startTimer}>
+                            width="100px">
                             <G>
                                 <Circle cx="50" cy="50" r="45" fill="white"/>
                                 <Path
@@ -207,11 +254,11 @@ export default class App extends Component {
                         </Svg>
                     </View>
                     <View style={styles.baseTimerCountdownContainer}>
-                        <Text style={styles.baseTimerCountdownText} onPress={this.startTimer}>
+                        <Text style={styles.baseTimerCountdownText}>
                             {this.formatTimeLeft(this.state.timeLeft)}
                         </Text>
                     </View>
-                </View>
+                </TouchableOpacity>
                 <View style={styles.baseTimerInputContainer}>
                     <Text style={styles.baseTimerInputText}>Change time</Text>
                     <TextInput

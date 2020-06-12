@@ -13,10 +13,51 @@ exports[`renders correctly 1`] = `
   }
 >
   <View
+    accessible={true}
+    focusable={true}
+    isTVSelectable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      Object {
+        "opacity": 1,
+        "position": "relative",
+        "top": -140,
+      }
+    }
+  >
+    <Text
+      style={
+        Object {
+          "fontSize": 30,
+        }
+      }
+    >
+      Count: 
+      0
+    </Text>
+  </View>
+  <View
+    accessible={true}
+    focusable={true}
+    isTVSelectable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
     style={
       Object {
         "alignItems": "center",
         "justifyContent": "center",
+        "opacity": 1,
       }
     }
   >
@@ -32,14 +73,6 @@ exports[`renders correctly 1`] = `
         bbWidth="100px"
         focusable={false}
         height="100px"
-        onPress={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        responsible={true}
         style={
           Array [
             Object {
@@ -247,7 +280,6 @@ exports[`renders correctly 1`] = `
       }
     >
       <Text
-        onPress={[Function]}
         style={
           Object {
             "color": "#333",

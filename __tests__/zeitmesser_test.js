@@ -17,9 +17,12 @@ it ('starts the timer upon user click timer text', () => {
     const { getByText } = render(<App />);
 
     const timerText = getByText(DEFAULT_TIME);
+    const timerCountText = getByText('Count: 0');
+    expect(timerCountText.props.children[1]).toEqual(0);
     fireEvent.press(timerText);
     jest.advanceTimersByTime(60000);
     expect(timerText.props.children).toEqual('0:30');
+    expect(timerCountText.props.children[1]).toEqual(1);
 });
 
 it ('changes the timer text upon input change', () => {
