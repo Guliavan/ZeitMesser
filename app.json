@@ -22,7 +22,12 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
-    }
+      "supportsTablet": false,
+      "bundleIdentifier": "com.tetinterprizes.zeitmesser",
+      "buildNumber": "1.0.0",
+      "infoPlist": {}
+    },
+    "description": "A simple timer app for mobile/web using React Native and SVG",
+    "githubUrl": "https://github.com/Guliavan/ZeitMesser"
   }
 }
